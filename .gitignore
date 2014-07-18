@@ -32,3 +32,6 @@ Thumbs.db
 # Eclipse project files
 .classpath
 .project
+
+# Libs
+/app/libs
