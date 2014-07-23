@@ -1,19 +1,84 @@
+/*
+ * Copyright (c) 2014. Queen Mary University of London
+ * Kleomenis Katevas, k.katevas@qmul.ac.uk
+ *
+ * This file is part of CrowdSensing software.
+ * For more information, please visit http://www.sensingkit.org
+ *
+ * CrowdSensing is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * CrowdSensing is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with CrowdSensing.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.sensingkit.crowdsensing_android;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
+import org.sensingkit.sensingkitlib.SKSensorManager;
 
 
 public class CrowdSensing extends ActionBarActivity {
+
+    private TextView mStatus;
+    private Button mStartSensing;
+    private Button mStopSensing;
+
+    SKSensorManager mSensorManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crowd_sensing);
-    }
 
+        try {
+            mSensorManager = SKSensorManager.getSensorManager(this);
+        } catch (Exception ex) {
+            System.out.println("Exception...");
+        }
+
+        // get refs to the TextViews
+        mStatus = (TextView)findViewById(R.id.status);
+
+        // get ref to the buttons and add actions
+        mStartSensing = (Button)findViewById(R.id.start_sensing);
+        mStartSensing.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                mStatus.setText("Enabled");
+
+                // Start sensing!!
+                mSensorManager.startSensing();
+            }
+        });
+
+        mStopSensing = (Button)findViewById(R.id.stop_sensing);
+        mStopSensing.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                mStatus.setText("Disabled");
+
+                // Stop sensing!!
+                mSensorManager.stopSensing();
+            }
+        });
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
