@@ -31,6 +31,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.sensingkit.sensingkitlib.SensingKitLib;
+import org.sensingkit.sensingkitlib.SKException;
 
 public class CrowdSensing extends ActionBarActivity {
 
@@ -48,9 +49,9 @@ public class CrowdSensing extends ActionBarActivity {
         setContentView(R.layout.activity_crowd_sensing);
 
         try {
-            mSensingKitLib = SensingKitLib.getSensingKitLib(this);
-        } catch (Exception ex) {
-            System.out.println("Exception...");
+            mSensingKitLib = SensingKitLib.getSensingKitLib(this.getApplicationContext());
+        } catch (SKException ex) {
+            Log.e(TAG, ex.getMessage());
         }
 
         // get refs to the TextViews
@@ -68,9 +69,9 @@ public class CrowdSensing extends ActionBarActivity {
                 try {
                     mSensingKitLib.startSensing();
                 }
-                catch (Exception ex)
+                catch (SKException ex)
                 {
-                    Log.e(TAG, ex.getLocalizedMessage());
+                    Log.e(TAG, ex.getMessage());
                 }
             }
         });
