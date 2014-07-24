@@ -21,24 +21,26 @@
 
 package org.sensingkit.crowdsensing_android;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.sensingkit.sensingkitlib.SKSensorManager;
-
+import org.sensingkit.sensingkitlib.SensingKitLib;
 
 public class CrowdSensing extends ActionBarActivity {
+
+    private static final String TAG = "CrowdSensing";
 
     private TextView mStatus;
     private Button mStartSensing;
     private Button mStopSensing;
 
-    SKSensorManager mSensorManager;
+    SensingKitLib mSensingKitLib;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +48,7 @@ public class CrowdSensing extends ActionBarActivity {
         setContentView(R.layout.activity_crowd_sensing);
 
         try {
-            mSensorManager = SKSensorManager.getSensorManager(this);
+            mSensingKitLib = SensingKitLib.getSensingKitLib(this);
         } catch (Exception ex) {
             System.out.println("Exception...");
         }
@@ -63,7 +65,13 @@ public class CrowdSensing extends ActionBarActivity {
                 mStatus.setText("Enabled");
 
                 // Start sensing!!
-                mSensorManager.startSensing();
+                try {
+                    mSensingKitLib.startSensing();
+                }
+                catch (Exception ex)
+                {
+                    Log.e(TAG, ex.getLocalizedMessage());
+                }
             }
         });
 
@@ -75,7 +83,7 @@ public class CrowdSensing extends ActionBarActivity {
                 mStatus.setText("Disabled");
 
                 // Stop sensing!!
-                mSensorManager.stopSensing();
+                mSensingKitLib.stopSensing();
             }
         });
     }
