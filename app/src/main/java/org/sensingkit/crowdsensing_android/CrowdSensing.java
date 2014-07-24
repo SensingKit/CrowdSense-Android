@@ -49,7 +49,7 @@ public class CrowdSensing extends ActionBarActivity {
         setContentView(R.layout.activity_crowd_sensing);
 
         try {
-            mSensingKitLib = SensingKitLib.getSensingKitLib(this.getApplicationContext());
+            mSensingKitLib = SensingKitLib.getSensingKitLib(this);
         } catch (SKException ex) {
             Log.e(TAG, ex.getMessage());
         }
