@@ -32,6 +32,7 @@ import android.widget.TextView;
 
 import org.sensingkit.sensingkitlib.SensingKitLib;
 import org.sensingkit.sensingkitlib.SKException;
+import org.sensingkit.sensingkitlib.modules.SensorModuleType;
 
 public class CrowdSensing extends ActionBarActivity {
 
@@ -57,6 +58,15 @@ public class CrowdSensing extends ActionBarActivity {
         // get refs to the TextViews
         mStatus = (TextView)findViewById(R.id.status);
 
+        DataListener listener = new DataListener();
+
+        try {
+            mSensingKitLib.subscribeToSensor(SensorModuleType.LIGHT, listener);
+        }
+        catch (SKException ex) {
+            Log.e(TAG, ex.getMessage());
+        }
+
         // get ref to the buttons and add actions
         mStartSensing = (Button)findViewById(R.id.start_sensing);
         mStartSensing.setOnClickListener(new View.OnClickListener() {
@@ -67,7 +77,7 @@ public class CrowdSensing extends ActionBarActivity {
 
                 // Start sensing!!
                 try {
-                    mSensingKitLib.startSensing();
+                    mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.LIGHT);
                 }
                 catch (SKException ex)
                 {
@@ -84,7 +94,13 @@ public class CrowdSensing extends ActionBarActivity {
                 mStatus.setText("Disabled");
 
                 // Stop sensing!!
-                mSensingKitLib.stopSensing();
+                try {
+                    mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.LIGHT);
+                }
+                catch (SKException ex)
+                {
+                    Log.e(TAG, ex.getMessage());
+                }
             }
         });
     }
