@@ -24,103 +24,151 @@ package org.sensingkit.crowdsensing_android;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.sensingkit.sensingkitlib.SensingKitLib;
 import org.sensingkit.sensingkitlib.SKException;
-import org.sensingkit.sensingkitlib.modules.SensorModuleType;
+
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class CrowdSensing extends ActionBarActivity {
 
     private static final String TAG = "CrowdSensing";
 
-    private TextView mStatus;
-    private Button mStartSensing;
-    private Button mStopSensing;
+    private enum ButtonStatus {
+        Started,
+        Stopped
+    }
 
-    SensingKitLib mSensingKitLib;
+    // UI Elements
+    private TextView mStatus;
+    private Button mAudioCalibrationButton;
+    private Button mSensingButton;
+
+    ButtonStatus mAudioCalibrationButtonStatus = ButtonStatus.Stopped;
+    ButtonStatus mSensingButtonStatus = ButtonStatus.Stopped;
+
+    // Sensing Session
+    SensingSession mSensingSession;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crowd_sensing);
 
-        try {
-            mSensingKitLib = SensingKitLib.getSensingKitLib(this);
-        } catch (SKException ex) {
-            Log.e(TAG, ex.getMessage());
-        }
+        // Init a SensingSession
+        mSensingSession = createSensingSession();
 
-        // get refs to the TextViews
+        // get refs to the Status TextView
         mStatus = (TextView)findViewById(R.id.status);
 
-        DataListener listener = new DataListener();
+        // get ref to the buttons and add actions
+        mAudioCalibrationButton = (Button)findViewById(R.id.audioCalibration);
+        mAudioCalibrationButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+
+                if (mAudioCalibrationButtonStatus == ButtonStatus.Started) {
+                    stopCalibrating();
+                }
+                else if (mAudioCalibrationButtonStatus == ButtonStatus.Stopped) {
+                    startCalibrating();
+                }
+            }
+        });
+
+        mSensingButton = (Button)findViewById(R.id.sensing);
+        mSensingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (mSensingButtonStatus == ButtonStatus.Started) {
+                    stopSensing();
+                }
+                else if (mSensingButtonStatus == ButtonStatus.Stopped) {
+                    startSensing();
+                }
+
+            }
+        });
+    }
+
+    private SensingSession createSensingSession() {
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.UK);
+        String folderName = dateFormat.format(new Date());
+
+        SensingSession session;
 
         try {
-            mSensingKitLib.subscribeToSensor(SensorModuleType.LIGHT, listener);
+            session = new SensingSession(this, folderName);
         }
         catch (SKException ex) {
             Log.e(TAG, ex.getMessage());
+            session = null;
         }
 
-        // get ref to the buttons and add actions
-        mStartSensing = (Button)findViewById(R.id.start_sensing);
-        mStartSensing.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                mStatus.setText("Enabled");
-
-                // Start sensing!!
-                try {
-                    mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.LIGHT);
-                }
-                catch (SKException ex)
-                {
-                    Log.e(TAG, ex.getMessage());
-                }
-            }
-        });
-
-        mStopSensing = (Button)findViewById(R.id.stop_sensing);
-        mStopSensing.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                mStatus.setText("Disabled");
-
-                // Stop sensing!!
-                try {
-                    mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.LIGHT);
-                }
-                catch (SKException ex)
-                {
-                    Log.e(TAG, ex.getMessage());
-                }
-            }
-        });
+        return session;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.crowd_sensing, menu);
-        return true;
-    }
+    private void startSensing() {
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        try {
+            mSensingSession.start();
         }
-        return super.onOptionsItemSelected(item);
+        catch (SKException ex) {
+            ex.printStackTrace();
+        }
+
+        mStatus.setText("Sensing");
+        mSensingButton.setText("Stop Sensing");
+        mSensingButtonStatus = ButtonStatus.Started;
     }
+
+    private void stopSensing() {
+
+        try {
+            mSensingSession.stop();
+        }
+        catch (SKException ex) {
+            ex.printStackTrace();
+        }
+
+        mStatus.setText("Stopped");
+        mSensingButton.setText("Start Sensing");
+        mSensingButtonStatus = ButtonStatus.Stopped;
+    }
+
+    private void startCalibrating() {
+
+        try {
+            mSensingSession.calibrateStart();
+        }
+        catch (SKException ex) {
+            ex.printStackTrace();
+        }
+
+        mAudioCalibrationButton.setText("Stop Audio Calibration");
+        mAudioCalibrationButtonStatus = ButtonStatus.Started;
+    }
+
+    private void stopCalibrating() {
+
+        try {
+            mSensingSession.calibrateStop();
+        }
+        catch (SKException ex) {
+            ex.printStackTrace();
+        }
+
+        mAudioCalibrationButton.setText("Audio Calibration");
+        mAudioCalibrationButtonStatus = ButtonStatus.Stopped;
+    }
+
 }
