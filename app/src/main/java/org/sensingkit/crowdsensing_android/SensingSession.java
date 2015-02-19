@@ -46,6 +46,11 @@ public class SensingSession {
     // Models
     private ModelWriter mAudioLevelModelWriter;
     private ModelWriter mAccelerometerModelWriter;
+    private ModelWriter mGravityModelWriter;
+    private ModelWriter mLinearAccelerationModelWriter;
+    private ModelWriter mGyroscopeModelWriter;
+    private ModelWriter mRotationModelWriter;
+    private ModelWriter mMagnetometerModelWriter;
 
     public SensingSession(final Context context, final String folderName) throws SKException {
 
@@ -58,27 +63,59 @@ public class SensingSession {
         // Init ModelWriters
         mAudioLevelModelWriter = new ModelWriter(SensorModuleType.AUDIO_LEVEL, mSessionFolder, "Calibration");
         mAccelerometerModelWriter = new ModelWriter(SensorModuleType.ACCELEROMETER, mSessionFolder, "Accelerometer");
+        mGravityModelWriter = new ModelWriter(SensorModuleType.GRAVITY, mSessionFolder, "Gravity");
+        mLinearAccelerationModelWriter = new ModelWriter(SensorModuleType.LINEAR_ACCELERATION, mSessionFolder, "LinearAcceleration");
+        mGyroscopeModelWriter = new ModelWriter(SensorModuleType.GYROSCOPE, mSessionFolder, "Gyroscope");
+        mRotationModelWriter = new ModelWriter(SensorModuleType.ROTATION, mSessionFolder, "Rotation");
+        mMagnetometerModelWriter = new ModelWriter(SensorModuleType.MAGNETOMETER, mSessionFolder, "Magnetometer");
 
         // Register Sensors
         mSensingKitLib.registerSensorModule(SensorModuleType.AUDIO_LEVEL);
         mSensingKitLib.registerSensorModule(SensorModuleType.ACCELEROMETER);
+        mSensingKitLib.registerSensorModule(SensorModuleType.GRAVITY);
+        mSensingKitLib.registerSensorModule(SensorModuleType.LINEAR_ACCELERATION);
+        mSensingKitLib.registerSensorModule(SensorModuleType.GYROSCOPE);
+        mSensingKitLib.registerSensorModule(SensorModuleType.ROTATION);
+        mSensingKitLib.registerSensorModule(SensorModuleType.MAGNETOMETER);
 
         // Subscribe ModelWriter
         mSensingKitLib.subscribeSensorDataListener(SensorModuleType.AUDIO_LEVEL, mAudioLevelModelWriter);
         mSensingKitLib.subscribeSensorDataListener(SensorModuleType.ACCELEROMETER, mAccelerometerModelWriter);
+        mSensingKitLib.subscribeSensorDataListener(SensorModuleType.GRAVITY, mGravityModelWriter);
+        mSensingKitLib.subscribeSensorDataListener(SensorModuleType.LINEAR_ACCELERATION, mLinearAccelerationModelWriter);
+        mSensingKitLib.subscribeSensorDataListener(SensorModuleType.GYROSCOPE, mGyroscopeModelWriter);
+        mSensingKitLib.subscribeSensorDataListener(SensorModuleType.ROTATION, mRotationModelWriter);
+        mSensingKitLib.subscribeSensorDataListener(SensorModuleType.MAGNETOMETER, mMagnetometerModelWriter);
 
     }
 
     public void start() throws SKException {
+
         mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.ACCELEROMETER);
+        mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.GRAVITY);
+        mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.LINEAR_ACCELERATION);
+        mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.GYROSCOPE);
+        mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.ROTATION);
+        mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.MAGNETOMETER);
     }
 
     public void stop() throws SKException {
+
         mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.ACCELEROMETER);
+        mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.GRAVITY);
+        mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.LINEAR_ACCELERATION);
+        mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.GYROSCOPE);
+        mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.ROTATION);
+        mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.MAGNETOMETER);
 
         // Flush
         mAudioLevelModelWriter.flush();
         mAccelerometerModelWriter.flush();
+        mGravityModelWriter.flush();
+        mLinearAccelerationModelWriter.flush();
+        mGyroscopeModelWriter.flush();
+        mRotationModelWriter.flush();
+        mMagnetometerModelWriter.flush();
     }
 
     public void close() throws SKException {
@@ -86,8 +123,19 @@ public class SensingSession {
         // Flush and Close (safer than just closing them)
         mAudioLevelModelWriter.flush();
         mAccelerometerModelWriter.flush();
+        mGravityModelWriter.flush();
+        mLinearAccelerationModelWriter.flush();
+        mGyroscopeModelWriter.flush();
+        mRotationModelWriter.flush();
+        mMagnetometerModelWriter.flush();
+
         mAudioLevelModelWriter.close();
         mAccelerometerModelWriter.close();
+        mGravityModelWriter.close();
+        mLinearAccelerationModelWriter.close();
+        mGyroscopeModelWriter.close();
+        mRotationModelWriter.close();
+        mMagnetometerModelWriter.close();
 
     }
 
