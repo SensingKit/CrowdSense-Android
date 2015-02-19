@@ -22,6 +22,7 @@
 package org.sensingkit.crowdsensing_android;
 
 import android.content.Context;
+import android.os.Environment;
 
 import org.sensingkit.sensingkitlib.SKException;
 import org.sensingkit.sensingkitlib.SKExceptionErrorCode;
@@ -77,7 +78,7 @@ public class SensingSession {
 
         // Flush
         mAudioLevelModelWriter.flush();
-        mAccelerometerModelWriter.close();
+        mAccelerometerModelWriter.flush();
     }
 
     public void close() throws SKException {
@@ -101,7 +102,7 @@ public class SensingSession {
     private File createFolder(final String folderName) throws SKException {
 
         // Create App folder
-        File appFolder = new File("sdcard" + "/CrowdSensing/");
+        File appFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/CrowdSensing/");
 
         if (!appFolder.exists()) {
             if (!appFolder.mkdir()) {

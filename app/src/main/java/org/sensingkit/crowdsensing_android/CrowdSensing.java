@@ -21,23 +21,23 @@
 
 package org.sensingkit.crowdsensing_android;
 
+import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.sensingkit.sensingkitlib.SKException;
-
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 public class CrowdSensing extends ActionBarActivity {
 
+    @SuppressWarnings("unused")
     private static final String TAG = "CrowdSensing";
 
     private enum ButtonStatus {
@@ -50,19 +50,18 @@ public class CrowdSensing extends ActionBarActivity {
     private Button mAudioCalibrationButton;
     private Button mSensingButton;
 
+    // Button Statuses
     ButtonStatus mAudioCalibrationButtonStatus = ButtonStatus.Stopped;
     ButtonStatus mSensingButtonStatus = ButtonStatus.Stopped;
 
-    // Sensing Session
-    SensingSession mSensingSession;
+    // Services
+    SensingService mSensingService;
+    boolean mBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crowd_sensing);
-
-        // Init a SensingSession
-        mSensingSession = createSensingSession();
 
         // get refs to the Status TextView
         mStatus = (TextView)findViewById(R.id.status);
@@ -99,32 +98,87 @@ public class CrowdSensing extends ActionBarActivity {
         });
     }
 
-    private SensingSession createSensingSession() {
+    @Override
+    protected void onStart() {
+        super.onStart();
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss", Locale.UK);
-        String folderName = dateFormat.format(new Date());
+        Log.i(TAG, "onStart()");
 
-        SensingSession session;
 
-        try {
-            session = new SensingSession(this, folderName);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        Log.i(TAG, "onStop()");
+
+        // Unbind from the service
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
         }
-        catch (SKException ex) {
-            Log.e(TAG, ex.getMessage());
-            session = null;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Intent intent = new Intent(this, SensingService.class);
+
+        if (!isSensingServiceRunning()) {
+
+            // Start the SensingService
+            startService(intent);
         }
 
-        return session;
+        // Bind SensingService
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+
+            Log.i(TAG, "onServiceConnected()");
+
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            SensingService.LocalBinder binder = (SensingService.LocalBinder) service;
+            mSensingService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+
+            Log.i(TAG, "onServiceDisconnected()");
+
+            mBound = false;
+        }
+
+    };
+
+    private boolean isSensingServiceRunning() {
+
+        ActivityManager manager = (ActivityManager) getSystemService (Context.ACTIVITY_SERVICE);
+
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE))
+        {
+            if (SensingService.class.getName().equals(service.service.getClassName()))
+            {
+                return true;
+            }
+        }
+        return false;
+
     }
 
     private void startSensing() {
 
-        try {
-            mSensingSession.start();
-        }
-        catch (SKException ex) {
-            ex.printStackTrace();
-        }
+        //
+        mSensingService.startSensing();
 
         mStatus.setText("Sensing");
         mSensingButton.setText("Stop Sensing");
@@ -133,12 +187,8 @@ public class CrowdSensing extends ActionBarActivity {
 
     private void stopSensing() {
 
-        try {
-            mSensingSession.stop();
-        }
-        catch (SKException ex) {
-            ex.printStackTrace();
-        }
+        //
+        mSensingService.stopSensing();
 
         mStatus.setText("Stopped");
         mSensingButton.setText("Start Sensing");
@@ -147,12 +197,8 @@ public class CrowdSensing extends ActionBarActivity {
 
     private void startCalibrating() {
 
-        try {
-            mSensingSession.calibrateStart();
-        }
-        catch (SKException ex) {
-            ex.printStackTrace();
-        }
+        //
+        mSensingService.startCalibration();
 
         mAudioCalibrationButton.setText("Stop Audio Calibration");
         mAudioCalibrationButtonStatus = ButtonStatus.Started;
@@ -160,12 +206,8 @@ public class CrowdSensing extends ActionBarActivity {
 
     private void stopCalibrating() {
 
-        try {
-            mSensingSession.calibrateStop();
-        }
-        catch (SKException ex) {
-            ex.printStackTrace();
-        }
+        //
+        mSensingService.stopCalibration();
 
         mAudioCalibrationButton.setText("Audio Calibration");
         mAudioCalibrationButtonStatus = ButtonStatus.Stopped;

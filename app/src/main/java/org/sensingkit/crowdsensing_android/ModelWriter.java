@@ -92,6 +92,9 @@ public class ModelWriter implements SKSensorDataListener {
             throw new SKException(TAG, ex.getMessage(), SKExceptionErrorCode.UNKNOWN_ERROR);
         }
 
+        // Make file visible
+        //MediaScannerConnection.scanFile(getBaseContext(), new String[]{file.getAbsolutePath()}, null, null);
+
         return file;
     }
 
