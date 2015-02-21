@@ -47,11 +47,9 @@ public class CrowdSensing extends ActionBarActivity {
 
     // UI Elements
     private TextView mStatus;
-    private Button mAudioCalibrationButton;
     private Button mSensingButton;
 
     // Button Statuses
-    ButtonStatus mAudioCalibrationButtonStatus = ButtonStatus.Stopped;
     ButtonStatus mSensingButtonStatus = ButtonStatus.Stopped;
 
     // Services
@@ -65,22 +63,6 @@ public class CrowdSensing extends ActionBarActivity {
 
         // get refs to the Status TextView
         mStatus = (TextView)findViewById(R.id.status);
-
-        // get ref to the buttons and add actions
-        mAudioCalibrationButton = (Button)findViewById(R.id.audioCalibration);
-        mAudioCalibrationButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-
-                if (mAudioCalibrationButtonStatus == ButtonStatus.Started) {
-                    stopCalibrating();
-                }
-                else if (mAudioCalibrationButtonStatus == ButtonStatus.Stopped) {
-                    startCalibrating();
-                }
-            }
-        });
 
         mSensingButton = (Button)findViewById(R.id.sensing);
         mSensingButton.setOnClickListener(new View.OnClickListener() {
@@ -180,7 +162,7 @@ public class CrowdSensing extends ActionBarActivity {
         //
         mSensingService.startSensing();
 
-        mStatus.setText("Sensing");
+        mStatus.setText("Sensing...");
         mSensingButton.setText("Stop Sensing");
         mSensingButtonStatus = ButtonStatus.Started;
     }
@@ -193,24 +175,6 @@ public class CrowdSensing extends ActionBarActivity {
         mStatus.setText("Stopped");
         mSensingButton.setText("Start Sensing");
         mSensingButtonStatus = ButtonStatus.Stopped;
-    }
-
-    private void startCalibrating() {
-
-        //
-        mSensingService.startCalibration();
-
-        mAudioCalibrationButton.setText("Stop Audio Calibration");
-        mAudioCalibrationButtonStatus = ButtonStatus.Started;
-    }
-
-    private void stopCalibrating() {
-
-        //
-        mSensingService.stopCalibration();
-
-        mAudioCalibrationButton.setText("Audio Calibration");
-        mAudioCalibrationButtonStatus = ButtonStatus.Stopped;
     }
 
 }

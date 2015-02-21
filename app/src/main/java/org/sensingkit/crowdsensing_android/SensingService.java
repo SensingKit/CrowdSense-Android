@@ -67,8 +67,6 @@ public class SensingService extends Service {
 
         try {
             mSensingSession.stop();
-            mSensingSession.calibrateStop();
-
             mSensingSession.close();
         }
         catch (SKException ex) {
@@ -150,28 +148,6 @@ public class SensingService extends Service {
         try {
             releaseWakeLock();
             mSensingSession.stop();
-        }
-        catch (SKException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void startCalibration() {
-
-        try {
-            acquireWakeLock();
-            mSensingSession.calibrateStart();
-        }
-        catch (SKException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void stopCalibration() {
-
-        try {
-            releaseWakeLock();
-            mSensingSession.calibrateStop();
         }
         catch (SKException ex) {
             ex.printStackTrace();

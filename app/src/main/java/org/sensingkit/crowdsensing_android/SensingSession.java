@@ -61,7 +61,7 @@ public class SensingSession {
         mSessionFolder = createFolder(folderName);
 
         // Init ModelWriters
-        mAudioLevelModelWriter = new ModelWriter(SensorModuleType.AUDIO_LEVEL, mSessionFolder, "Calibration");
+        mAudioLevelModelWriter = new ModelWriter(SensorModuleType.AUDIO_LEVEL, mSessionFolder, "Audio");
         mAccelerometerModelWriter = new ModelWriter(SensorModuleType.ACCELEROMETER, mSessionFolder, "Accelerometer");
         mGravityModelWriter = new ModelWriter(SensorModuleType.GRAVITY, mSessionFolder, "Gravity");
         mLinearAccelerationModelWriter = new ModelWriter(SensorModuleType.LINEAR_ACCELERATION, mSessionFolder, "LinearAcceleration");
@@ -91,6 +91,7 @@ public class SensingSession {
 
     public void start() throws SKException {
 
+        mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.AUDIO_LEVEL);
         mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.ACCELEROMETER);
         mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.GRAVITY);
         mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.LINEAR_ACCELERATION);
@@ -101,6 +102,7 @@ public class SensingSession {
 
     public void stop() throws SKException {
 
+        mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.AUDIO_LEVEL);
         mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.ACCELEROMETER);
         mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.GRAVITY);
         mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.LINEAR_ACCELERATION);
@@ -137,14 +139,6 @@ public class SensingSession {
         mRotationModelWriter.close();
         mMagnetometerModelWriter.close();
 
-    }
-
-    public void calibrateStart() throws SKException {
-        mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.AUDIO_LEVEL);
-    }
-
-    public void calibrateStop() throws SKException  {
-        mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.AUDIO_LEVEL);
     }
 
     private File createFolder(final String folderName) throws SKException {
