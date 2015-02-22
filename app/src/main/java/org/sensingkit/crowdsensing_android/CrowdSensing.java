@@ -157,11 +157,14 @@ public class CrowdSensing extends ActionBarActivity {
 
     }
 
+
+
     private void startSensing() {
 
-        //
+        // Start Sensing
         mSensingService.startSensing();
 
+        // Update UI
         mStatus.setText("Sensing...");
         mSensingButton.setText("Stop Sensing");
         mSensingButtonStatus = ButtonStatus.Started;
@@ -169,9 +172,10 @@ public class CrowdSensing extends ActionBarActivity {
 
     private void stopSensing() {
 
-        //
+        // Stop Sensing
         mSensingService.stopSensing();
 
+        // Update UI
         mStatus.setText("Stopped");
         mSensingButton.setText("Start Sensing");
         mSensingButtonStatus = ButtonStatus.Stopped;
