@@ -21,6 +21,8 @@
 
 package org.sensingkit.crowdsensing_android;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -30,7 +32,6 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import org.sensingkit.sensingkitlib.SKException;
-import org.sensingkit.sensingkitlib.SKUtilities;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -114,6 +115,31 @@ public class SensingService extends Service {
         return session;
     }
 
+    private void showNotification() {
+
+        // The PendingIntent to launch our activity if the user selects this notification
+        Intent intent = new Intent(this, CrowdSensing.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
+        // Build the notification
+        Notification notification = new Notification.Builder(this)
+                .setContentTitle("Crowd Sensing")
+                .setContentText("Collecting data...")
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentIntent(contentIntent)
+                .setWhen(System.currentTimeMillis())
+                .setOngoing(true)
+                .build();
+
+        // Show the notification
+        startForeground(1, notification);
+    }
+
+    private void hideNotification() {
+        stopForeground(true);
+    }
+
     // --- Wake Lock
 
     private void acquireWakeLock() {
@@ -141,6 +167,9 @@ public class SensingService extends Service {
         catch (SKException ex) {
             ex.printStackTrace();
         }
+
+        // Show notification
+        showNotification();
     }
 
     public void stopSensing() {
@@ -152,6 +181,9 @@ public class SensingService extends Service {
         catch (SKException ex) {
             ex.printStackTrace();
         }
+
+        // Hide notification
+        hideNotification();
     }
 
 }
