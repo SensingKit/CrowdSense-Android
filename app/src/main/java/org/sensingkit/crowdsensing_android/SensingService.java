@@ -48,7 +48,7 @@ public class SensingService extends Service {
 
     // Sensing Session
     private SensingSession mSensingSession;
-
+    private boolean isSensing = false;
 
     @Override
     public void onCreate() {
@@ -69,6 +69,7 @@ public class SensingService extends Service {
         try {
             mSensingSession.stop();
             mSensingSession.close();
+            hideNotification();
         }
         catch (SKException ex) {
             ex.printStackTrace();
@@ -163,6 +164,7 @@ public class SensingService extends Service {
        try {
            acquireWakeLock();
            mSensingSession.start();
+           isSensing = true;
         }
         catch (SKException ex) {
             ex.printStackTrace();
@@ -177,6 +179,7 @@ public class SensingService extends Service {
         try {
             releaseWakeLock();
             mSensingSession.stop();
+            isSensing = false;
         }
         catch (SKException ex) {
             ex.printStackTrace();
@@ -184,6 +187,10 @@ public class SensingService extends Service {
 
         // Hide notification
         hideNotification();
+    }
+
+    public boolean isSensing() {
+        return isSensing;
     }
 
 }

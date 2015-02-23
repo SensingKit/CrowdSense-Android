@@ -130,6 +130,13 @@ public class CrowdSensing extends ActionBarActivity {
             SensingService.LocalBinder binder = (SensingService.LocalBinder) service;
             mSensingService = binder.getService();
             mBound = true;
+
+            // Update the UI
+            if (mSensingService.isSensing()) {
+                mStatus.setText("Sensing...");
+                mSensingButton.setText("Stop Sensing");
+                mSensingButtonStatus = ButtonStatus.Started;
+            }
         }
 
         @Override
