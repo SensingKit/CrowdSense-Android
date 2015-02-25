@@ -53,8 +53,6 @@ public class SensingService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        mSensingSession = createSensingSession();
     }
 
     @Override
@@ -161,7 +159,11 @@ public class SensingService extends Service {
 
     public void startSensing() {
 
-       try {
+        if (mSensingSession == null) {
+            mSensingSession = createSensingSession();
+        }
+
+        try {
            acquireWakeLock();
            mSensingSession.start();
            isSensing = true;
