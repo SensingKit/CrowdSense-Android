@@ -40,17 +40,19 @@ public class CrowdSensing extends ActionBarActivity {
     @SuppressWarnings("unused")
     private static final String TAG = "CrowdSensing";
 
-    private enum ButtonStatus {
-        Started,
-        Stopped
+    private enum SensingStatus {
+        Stopped,
+        Sensing,
+        Paused
     }
 
     // UI Elements
     private TextView mStatus;
     private Button mSensingButton;
+    private Button mPauseButton;
 
     // Button Statuses
-    ButtonStatus mSensingButtonStatus = ButtonStatus.Stopped;
+    SensingStatus mSensingStatus;
 
     // Services
     SensingService mSensingService;
@@ -66,14 +68,50 @@ public class CrowdSensing extends ActionBarActivity {
 
         mSensingButton = (Button)findViewById(R.id.sensing);
         mSensingButton.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
 
-                if (mSensingButtonStatus == ButtonStatus.Started) {
-                    stopSensing();
+                switch (mSensingStatus) {
+
+                    case Stopped:
+                        startSensing();
+                        setSensingStatus(SensingStatus.Sensing);
+                        break;
+
+                    case Paused:
+                    case Sensing:
+                        stopSensing();
+                        setSensingStatus(SensingStatus.Stopped);
+                        break;
+
                 }
-                else if (mSensingButtonStatus == ButtonStatus.Stopped) {
-                    startSensing();
+
+            }
+        });
+
+        mPauseButton = (Button)findViewById(R.id.pause);
+        mPauseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                switch (mSensingStatus) {
+
+                    case Stopped:
+                        Log.e(TAG, "Case Stopped should not be available.");
+
+                        break;
+
+                    case Paused:
+                        continueSensing();
+                        setSensingStatus(SensingStatus.Sensing);
+                        break;
+
+                    case Sensing:
+                        pauseSensing();
+                        setSensingStatus(SensingStatus.Paused);
+                        break;
+
                 }
 
             }
@@ -119,7 +157,7 @@ public class CrowdSensing extends ActionBarActivity {
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private final ServiceConnection mConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
@@ -132,10 +170,20 @@ public class CrowdSensing extends ActionBarActivity {
             mBound = true;
 
             // Update the UI
-            if (mSensingService.isSensing()) {
-                mStatus.setText("Sensing...");
-                mSensingButton.setText("Stop Sensing");
-                mSensingButtonStatus = ButtonStatus.Started;
+            switch (mSensingService.getSensingStatus()) {
+
+                case Stopped:
+                    setSensingStatus(SensingStatus.Stopped);
+                    break;
+
+                case Sensing:
+                    setSensingStatus(SensingStatus.Sensing);
+                    break;
+
+                case Paused:
+                    setSensingStatus(SensingStatus.Paused);
+                    break;
+
             }
         }
 
@@ -164,17 +212,60 @@ public class CrowdSensing extends ActionBarActivity {
 
     }
 
+    private void setSensingStatus(SensingStatus status) {
+
+        switch (status) {
+
+            case Stopped:
+
+                mStatus.setText("Stopped");
+                mSensingButton.setText("Start Sensing");
+                mPauseButton.setText("Pause");
+                mPauseButton.setEnabled(false);
+                break;
+
+            case Sensing:
+
+                mStatus.setText("Sensing...");
+                mSensingButton.setText("Stop Sensing");
+                mPauseButton.setText("Pause");
+                mPauseButton.setEnabled(true);
+                break;
+
+            case Paused:
+
+                mStatus.setText("Paused");
+                mSensingButton.setText("Stop Sensing");
+                mPauseButton.setText("Continue");
+                mPauseButton.setEnabled(true);
+                break;
+
+            default:
+                Log.i(TAG, "Unknown SensingStatus: " + status);
+
+        }
+
+        mSensingStatus = status;
+    }
+
 
 
     private void startSensing() {
 
         // Start Sensing
         mSensingService.startSensing();
+    }
 
-        // Update UI
-        mStatus.setText("Sensing...");
-        mSensingButton.setText("Stop Sensing");
-        mSensingButtonStatus = ButtonStatus.Started;
+    private void pauseSensing() {
+
+        // Pause Sensing
+        mSensingService.pauseSensing();
+    }
+
+    private void continueSensing() {
+
+        // Continue Sensing
+        mSensingService.continueSensing();
     }
 
     private void stopSensing() {
@@ -182,10 +273,6 @@ public class CrowdSensing extends ActionBarActivity {
         // Stop Sensing
         mSensingService.stopSensing();
 
-        // Update UI
-        mStatus.setText("Stopped");
-        mSensingButton.setText("Start Sensing");
-        mSensingButtonStatus = ButtonStatus.Stopped;
     }
 
 }

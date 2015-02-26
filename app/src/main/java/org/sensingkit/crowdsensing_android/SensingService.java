@@ -42,13 +42,20 @@ public class SensingService extends Service {
     @SuppressWarnings("unused")
     protected static final String TAG = "SensingService";
 
+    public enum SensingServiceStatus {
+        Stopped,
+        Sensing,
+        Paused
+    }
+
     private final IBinder mBinder = new LocalBinder();
 
     private PowerManager.WakeLock mWakeLock;
 
     // Sensing Session
     private SensingSession mSensingSession;
-    private boolean isSensing = false;
+
+    private SensingServiceStatus mStatus = SensingServiceStatus.Stopped;
 
     @Override
     public void onCreate() {
@@ -159,14 +166,53 @@ public class SensingService extends Service {
 
     public void startSensing() {
 
-        if (mSensingSession == null) {
-            mSensingSession = createSensingSession();
+        // Set the status
+        mStatus = SensingServiceStatus.Sensing;
+
+        if (mSensingSession != null) {
+            Log.e(TAG, "Sensing Session is already created!");
         }
+
+        mSensingSession = createSensingSession();
 
         try {
            acquireWakeLock();
            mSensingSession.start();
-           isSensing = true;
+        }
+        catch (SKException ex) {
+            ex.printStackTrace();
+        }
+
+        // Show notification
+        showNotification();
+    }
+
+    public void pauseSensing() {
+
+        // Set the status
+        mStatus = SensingServiceStatus.Paused;
+
+        try {
+            releaseWakeLock();
+            mSensingSession.stop();
+        }
+        catch (SKException ex) {
+            ex.printStackTrace();
+        }
+
+        // Hide notification
+        hideNotification();
+    }
+
+    public void continueSensing() {
+
+        // Set the status
+        mStatus = SensingServiceStatus.Sensing;
+
+        acquireWakeLock();
+
+        try {
+            mSensingSession.start();
         }
         catch (SKException ex) {
             ex.printStackTrace();
@@ -178,21 +224,31 @@ public class SensingService extends Service {
 
     public void stopSensing() {
 
+        // Set the status
+        mStatus = SensingServiceStatus.Stopped;
+
         try {
-            releaseWakeLock();
-            mSensingSession.stop();
-            isSensing = false;
+
+            if (mSensingSession.isSensing()) {
+                mSensingSession.stop();
+            }
+
+            mSensingSession.close();
         }
         catch (SKException ex) {
             ex.printStackTrace();
         }
 
+        releaseWakeLock();
+
         // Hide notification
         hideNotification();
+
+        mSensingSession = null;
     }
 
-    public boolean isSensing() {
-        return isSensing;
+    public SensingServiceStatus getSensingStatus() {
+        return mStatus;
     }
 
 }

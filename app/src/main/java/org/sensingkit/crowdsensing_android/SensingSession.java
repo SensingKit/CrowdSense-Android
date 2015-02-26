@@ -39,6 +39,7 @@ public class SensingSession {
 
     // SensingKit
     private SensingKitLibInterface mSensingKitLib;
+    private boolean isSensing = false;
 
     // Session Folder
     private File mSessionFolder;
@@ -78,7 +79,7 @@ public class SensingSession {
         mSensingKitLib.registerSensorModule(SensorModuleType.ROTATION);
         mSensingKitLib.registerSensorModule(SensorModuleType.MAGNETOMETER);
 
-        // Subscribe ModelWriter
+        // Subscribe ModelWriters
         mSensingKitLib.subscribeSensorDataListener(SensorModuleType.AUDIO_LEVEL, mAudioLevelModelWriter);
         mSensingKitLib.subscribeSensorDataListener(SensorModuleType.ACCELEROMETER, mAccelerometerModelWriter);
         mSensingKitLib.subscribeSensorDataListener(SensorModuleType.GRAVITY, mGravityModelWriter);
@@ -91,6 +92,9 @@ public class SensingSession {
 
     public void start() throws SKException {
 
+        this.isSensing = true;
+
+        // Start
         mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.AUDIO_LEVEL);
         mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.ACCELEROMETER);
         mSensingKitLib.startContinuousSensingWithSensor(SensorModuleType.GRAVITY);
@@ -102,6 +106,9 @@ public class SensingSession {
 
     public void stop() throws SKException {
 
+        this.isSensing = false;
+
+        // Stop
         mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.AUDIO_LEVEL);
         mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.ACCELEROMETER);
         mSensingKitLib.stopContinuousSensingWithSensor(SensorModuleType.GRAVITY);
@@ -122,15 +129,25 @@ public class SensingSession {
 
     public void close() throws SKException {
 
-        // Flush and Close (safer than just closing them)
-        mAudioLevelModelWriter.flush();
-        mAccelerometerModelWriter.flush();
-        mGravityModelWriter.flush();
-        mLinearAccelerationModelWriter.flush();
-        mGyroscopeModelWriter.flush();
-        mRotationModelWriter.flush();
-        mMagnetometerModelWriter.flush();
+        // Unsubscribe ModelWriters
+        mSensingKitLib.unsubscribeSensorDataListener(SensorModuleType.AUDIO_LEVEL, mAudioLevelModelWriter);
+        mSensingKitLib.unsubscribeSensorDataListener(SensorModuleType.ACCELEROMETER, mAccelerometerModelWriter);
+        mSensingKitLib.unsubscribeSensorDataListener(SensorModuleType.GRAVITY, mGravityModelWriter);
+        mSensingKitLib.unsubscribeSensorDataListener(SensorModuleType.LINEAR_ACCELERATION, mLinearAccelerationModelWriter);
+        mSensingKitLib.unsubscribeSensorDataListener(SensorModuleType.GYROSCOPE, mGyroscopeModelWriter);
+        mSensingKitLib.unsubscribeSensorDataListener(SensorModuleType.ROTATION, mRotationModelWriter);
+        mSensingKitLib.unsubscribeSensorDataListener(SensorModuleType.MAGNETOMETER, mMagnetometerModelWriter);
 
+        // Deregister Sensors
+        mSensingKitLib.deregisterSensorModule(SensorModuleType.AUDIO_LEVEL);
+        mSensingKitLib.deregisterSensorModule(SensorModuleType.ACCELEROMETER);
+        mSensingKitLib.deregisterSensorModule(SensorModuleType.GRAVITY);
+        mSensingKitLib.deregisterSensorModule(SensorModuleType.LINEAR_ACCELERATION);
+        mSensingKitLib.deregisterSensorModule(SensorModuleType.GYROSCOPE);
+        mSensingKitLib.deregisterSensorModule(SensorModuleType.ROTATION);
+        mSensingKitLib.deregisterSensorModule(SensorModuleType.MAGNETOMETER);
+
+        // Close
         mAudioLevelModelWriter.close();
         mAccelerometerModelWriter.close();
         mGravityModelWriter.close();
@@ -138,12 +155,15 @@ public class SensingSession {
         mGyroscopeModelWriter.close();
         mRotationModelWriter.close();
         mMagnetometerModelWriter.close();
+    }
 
+    public boolean isSensing() {
+        return this.isSensing;
     }
 
     private File createFolder(final String folderName) throws SKException {
 
-        // Create App folder
+        // Create App folder: CrowdSensing
         File appFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/CrowdSensing/");
 
         if (!appFolder.exists()) {
@@ -152,7 +172,7 @@ public class SensingSession {
             }
         }
 
-        // Create current folder
+        // Create session folder
         File folder = new File(appFolder, folderName);
 
         if (!folder.exists()) {

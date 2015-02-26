@@ -8,7 +8,7 @@ tools:context=".CrowdSensing">
 <TextView
     android:id="@+id/status"
     android:text="Stopped"
-    android:textSize="30dp"
+    android:textSize="30sp"
     android:textStyle="bold"
     android:layout_width="fill_parent"
     android:layout_height="30pt"
@@ -19,5 +19,12 @@ tools:context=".CrowdSensing">
         android:layout_width="fill_parent"
         android:layout_height="40pt"
         android:text="Start Sensing" />
+
+    <Button
+        android:id="@+id/pause"
+        android:layout_width="fill_parent"
+        android:layout_height="40pt"
+        android:text="Pause"
+        android:enabled="false"/>
 
 </LinearLayout>
