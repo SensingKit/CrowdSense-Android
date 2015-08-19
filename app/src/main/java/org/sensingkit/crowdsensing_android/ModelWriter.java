@@ -26,8 +26,8 @@ import android.util.Log;
 import org.sensingkit.sensingkitlib.SKException;
 import org.sensingkit.sensingkitlib.SKExceptionErrorCode;
 import org.sensingkit.sensingkitlib.SKSensorDataListener;
-import org.sensingkit.sensingkitlib.model.data.DataInterface;
-import org.sensingkit.sensingkitlib.modules.SensorModuleType;
+import org.sensingkit.sensingkitlib.SKSensorModuleType;
+import org.sensingkit.sensingkitlib.data.SKSensorData;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -40,12 +40,12 @@ public class ModelWriter implements SKSensorDataListener {
     @SuppressWarnings("unused")
     private static final String TAG = "ModelWriter";
 
-    private final SensorModuleType moduleType;
+    private final SKSensorModuleType moduleType;
 
     private File mFile;
     private BufferedOutputStream mFileBuffer;
 
-    public ModelWriter(SensorModuleType moduleType, File sessionFolder, String filename) throws SKException {
+    public ModelWriter(SKSensorModuleType moduleType, File sessionFolder, String filename) throws SKException {
 
         this.moduleType = moduleType;
         this.mFile = createFile(sessionFolder, filename);
@@ -99,12 +99,12 @@ public class ModelWriter implements SKSensorDataListener {
     }
 
     @Override
-    public void onDataReceived(SensorModuleType moduleType, DataInterface moduleData) {
+    public void onDataReceived(SKSensorModuleType moduleType, SKSensorData moduleData) {
 
         if (mFileBuffer != null) {
 
             // Build the data line
-            String dataLine = moduleData.toString() + "\n";
+            String dataLine = moduleData.getDataInCSV() + "\n";
 
             // Write in the FileBuffer
             try {

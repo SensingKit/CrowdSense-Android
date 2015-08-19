@@ -2,8 +2,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".CrowdSensing" >
+
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"
         app:showAsAction="never" />
+
+    <item android:id="@+id/file"
+        android:title="Sensor Data"
+        android:orderInCategory="200" >
+
+        <!-- "file" submenu -->
+        <menu>
+            <item android:id="@+id/create_new"
+                android:title="Delete All Data" />
+        </menu>
+    </item>
+
 </menu>
