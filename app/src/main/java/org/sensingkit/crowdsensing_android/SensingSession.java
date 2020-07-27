@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2015. Queen Mary University of London
- * Kleomenis Katevas, k.katevas@qmul.ac.uk
+ * Copyright (c) 2014. Kleomenis Katevas
+ * Kleomenis Katevas, hello@sensingkit.org
  *
  * This file is part of CrowdSensing software.
  * For more information, please visit http://www.sensingkit.org
@@ -22,7 +22,6 @@
 package org.sensingkit.crowdsensing_android;
 
 import android.content.Context;
-import android.os.Environment;
 
 import org.sensingkit.sensingkitlib.SKException;
 import org.sensingkit.sensingkitlib.SKExceptionErrorCode;
@@ -34,7 +33,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.sensingkit.sensingkitlib.SKSensorType.*;
 
 public class SensingSession {
 

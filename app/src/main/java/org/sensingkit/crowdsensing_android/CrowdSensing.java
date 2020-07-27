@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2014. Queen Mary University of London
- * Kleomenis Katevas, k.katevas@qmul.ac.uk
+ * Copyright (c) 2014. Kleomenis Katevas
+ * Kleomenis Katevas, hello@sensingkit.org
  *
  * This file is part of CrowdSensing software.
  * For more information, please visit http://www.sensingkit.org
