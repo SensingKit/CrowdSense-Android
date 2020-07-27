@@ -32,7 +32,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 
 import android.util.Log;
-import android.view.Menu;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -67,12 +66,20 @@ public class CrowdSensing extends AppCompatActivity {
     boolean mBound = false;
 
     SKSensorType[] sensors = new SKSensorType[]{AUDIO_LEVEL, ACCELEROMETER, GRAVITY, LINEAR_ACCELERATION, GYROSCOPE, ROTATION, MAGNETOMETER, LOCATION};
+    String mSessionName = null;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crowd_sensing);
+
+        // Check if session name is available in intent
+        Intent intent = getIntent();
+        String sessionName = intent.getStringExtra("SESSION_NAME");
+        if (sessionName != null && sessionName.length() > 0) {
+            mSessionName = sessionName;
+        }
 
         // get refs to the Status TextView
         mStatus = findViewById(R.id.status);
@@ -242,7 +249,7 @@ public class CrowdSensing extends AppCompatActivity {
 
         // Start Sensing
         try {
-            mSensingService.startSensing(null, this.sensors);
+            mSensingService.startSensing(mSessionName, this.sensors);
         } catch (SKException e) {
             e.printStackTrace();
         }
