@@ -68,7 +68,7 @@ public class SensingSession {
         // Init and Subscribe modelWriters
         for (SKSensorType sensor : sensors) {
             ModelWriter modelWriter = new ModelWriter(sensor, mSessionFolder, sensor.getNonspacedName());
-            mSensingKitLib.subscribeSensorDataHandler(SKSensorType.ACCELEROMETER, modelWriter);
+            mSensingKitLib.subscribeSensorDataHandler(sensor, modelWriter);
             modelWriterList.add(modelWriter);
         }
     }
