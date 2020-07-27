@@ -21,6 +21,8 @@
 
 package org.sensingkit.crowdsensing_android;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -28,16 +30,20 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v7.app.ActionBarActivity;
 
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class CrowdSensing extends ActionBarActivity {
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import org.sensingkit.sensingkitlib.SKException;
+import org.sensingkit.sensingkitlib.SKSensorType;
+import static org.sensingkit.sensingkitlib.SKSensorType.*;
+
+public class CrowdSensing extends AppCompatActivity {
 
     @SuppressWarnings("unused")
     private static final String TAG = "CrowdSensing";
@@ -60,64 +66,60 @@ public class CrowdSensing extends ActionBarActivity {
     SensingService mSensingService;
     boolean mBound = false;
 
+    SKSensorType[] sensors = new SKSensorType[]{AUDIO_LEVEL, ACCELEROMETER, GRAVITY, LINEAR_ACCELERATION, GYROSCOPE, ROTATION, MAGNETOMETER, LOCATION};
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crowd_sensing);
 
         // get refs to the Status TextView
-        mStatus = (TextView)findViewById(R.id.status);
+        mStatus = findViewById(R.id.status);
 
-        mSensingButton = (Button)findViewById(R.id.sensing);
-        mSensingButton.setOnClickListener(new View.OnClickListener() {
+        mSensingButton = findViewById(R.id.sensing);
+        mSensingButton.setOnClickListener(view -> {
 
-            @Override
-            public void onClick(View view) {
+            switch (mSensingStatus) {
 
-                switch (mSensingStatus) {
+                case Stopped:
+                    startSensing();
+                    setSensingStatus(SensingStatus.Sensing);
+                    break;
 
-                    case Stopped:
-                        startSensing();
-                        setSensingStatus(SensingStatus.Sensing);
-                        break;
-
-                    case Paused:
-                    case Sensing:
-                        stopSensing();
-                        setSensingStatus(SensingStatus.Stopped);
-                        break;
-
-                }
-
+                case Paused:
+                case Sensing:
+                    stopSensing();
+                    setSensingStatus(SensingStatus.Stopped);
+                    break;
             }
         });
 
-        mPauseButton = (Button)findViewById(R.id.pause);
-        mPauseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        mPauseButton = findViewById(R.id.pause);
+        mPauseButton.setOnClickListener(view -> {
 
-                switch (mSensingStatus) {
+            switch (mSensingStatus) {
 
-                    case Stopped:
-                        Log.e(TAG, "Case Stopped should not be available.");
+                case Stopped:
+                    Log.e(TAG, "Case Stopped should not be available.");
+                    break;
 
-                        break;
+                case Paused:
+                    continueSensing();
+                    setSensingStatus(SensingStatus.Sensing);
+                    break;
 
-                    case Paused:
-                        continueSensing();
-                        setSensingStatus(SensingStatus.Sensing);
-                        break;
-
-                    case Sensing:
-                        pauseSensing();
-                        setSensingStatus(SensingStatus.Paused);
-                        break;
-
-                }
-
+                case Sensing:
+                    pauseSensing();
+                    setSensingStatus(SensingStatus.Paused);
+                    break;
             }
         });
+
+        // Request Permissions
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION},
+                1);
     }
 
     @Override
@@ -136,21 +138,6 @@ public class CrowdSensing extends ActionBarActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.crowd_sensing, menu);
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        // Handle item selection
-        switch (item.getItemId()) {
-
-            case R.id.action_settings:
-                //newGame();
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     @Override
@@ -196,7 +183,6 @@ public class CrowdSensing extends ActionBarActivity {
                 case Paused:
                     setSensingStatus(SensingStatus.Paused);
                     break;
-
             }
         }
 
@@ -207,7 +193,6 @@ public class CrowdSensing extends ActionBarActivity {
 
             mBound = false;
         }
-
     };
 
     private boolean isSensingServiceRunning() {
@@ -222,9 +207,9 @@ public class CrowdSensing extends ActionBarActivity {
             }
         }
         return false;
-
     }
 
+    @SuppressLint("SetTextI18n")
     private void setSensingStatus(SensingStatus status) {
 
         switch (status) {
@@ -255,7 +240,6 @@ public class CrowdSensing extends ActionBarActivity {
 
             default:
                 Log.i(TAG, "Unknown SensingStatus: " + status);
-
         }
 
         mSensingStatus = status;
@@ -264,7 +248,11 @@ public class CrowdSensing extends ActionBarActivity {
     private void startSensing() {
 
         // Start Sensing
-        mSensingService.startSensing();
+        try {
+            mSensingService.startSensing(null, this.sensors);
+        } catch (SKException e) {
+            e.printStackTrace();
+        }
     }
 
     private void pauseSensing() {
@@ -283,7 +271,5 @@ public class CrowdSensing extends ActionBarActivity {
 
         // Stop Sensing
         mSensingService.stopSensing();
-
     }
-
 }

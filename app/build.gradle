@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 30
 
     defaultConfig {
         applicationId "org.sensingkit.crowdsensing_android"
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 30
         versionCode 3
         versionName "1.2.0"
     }
@@ -17,6 +16,10 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -28,8 +31,8 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'org.sensingkit:SensingKitLib-release@aar'
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.google.android.gms:play-services-location:10.2.4'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "com.android.support:appcompat-v7:30.1."
+    implementation 'org.sensingkit:SensingKitLib-release@aar'
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
 }

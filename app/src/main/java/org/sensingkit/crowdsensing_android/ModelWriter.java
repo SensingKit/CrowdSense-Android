@@ -25,8 +25,8 @@ import android.util.Log;
 
 import org.sensingkit.sensingkitlib.SKException;
 import org.sensingkit.sensingkitlib.SKExceptionErrorCode;
-import org.sensingkit.sensingkitlib.SKSensorDataListener;
-import org.sensingkit.sensingkitlib.SKSensorModuleType;
+import org.sensingkit.sensingkitlib.SKSensorDataHandler;
+import org.sensingkit.sensingkitlib.SKSensorType;
 import org.sensingkit.sensingkitlib.data.SKSensorData;
 
 import java.io.BufferedOutputStream;
@@ -35,19 +35,19 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class ModelWriter implements SKSensorDataListener {
+public class ModelWriter implements SKSensorDataHandler {
 
     @SuppressWarnings("unused")
     private static final String TAG = "ModelWriter";
 
-    private final SKSensorModuleType moduleType;
+    private final SKSensorType sensorType;
 
     private File mFile;
     private BufferedOutputStream mFileBuffer;
 
-    public ModelWriter(SKSensorModuleType moduleType, File sessionFolder, String filename) throws SKException {
+    public ModelWriter(SKSensorType sensorType, File sessionFolder, String filename) throws SKException {
 
-        this.moduleType = moduleType;
+        this.sensorType = sensorType;
         this.mFile = createFile(sessionFolder, filename);
 
         try {
@@ -56,7 +56,10 @@ public class ModelWriter implements SKSensorDataListener {
         catch (FileNotFoundException ex) {
             throw new SKException(TAG, "File could not be found.", SKExceptionErrorCode.UNKNOWN_ERROR);
         }
+    }
 
+    SKSensorType getSensorType() {
+        return sensorType;
     }
 
     public void flush() throws SKException {
@@ -92,19 +95,16 @@ public class ModelWriter implements SKSensorDataListener {
             throw new SKException(TAG, ex.getMessage(), SKExceptionErrorCode.UNKNOWN_ERROR);
         }
 
-        // Make file visible
-        //MediaScannerConnection.scanFile(getBaseContext(), new String[]{file.getAbsolutePath()}, null, null);
-
         return file;
     }
 
     @Override
-    public void onDataReceived(SKSensorModuleType moduleType, SKSensorData moduleData) {
+    public void onDataReceived(SKSensorType sensorType, SKSensorData data) {
 
         if (mFileBuffer != null) {
 
             // Build the data line
-            String dataLine = moduleData.getDataInCSV() + "\n";
+            String dataLine = data.getDataInCSV() + "\n";
 
             // Write in the FileBuffer
             try {
@@ -114,5 +114,4 @@ public class ModelWriter implements SKSensorDataListener {
             }
         }
     }
-
 }

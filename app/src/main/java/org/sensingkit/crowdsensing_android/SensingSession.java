@@ -26,11 +26,15 @@ import android.os.Environment;
 
 import org.sensingkit.sensingkitlib.SKException;
 import org.sensingkit.sensingkitlib.SKExceptionErrorCode;
-import org.sensingkit.sensingkitlib.SKSensorModuleType;
+import org.sensingkit.sensingkitlib.SKSensorType;
 import org.sensingkit.sensingkitlib.SensingKitLib;
 import org.sensingkit.sensingkitlib.SensingKitLibInterface;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.sensingkit.sensingkitlib.SKSensorType.*;
 
 public class SensingSession {
 
@@ -44,50 +48,31 @@ public class SensingSession {
     // Session Folder
     private File mSessionFolder;
 
-    // Models
-    private ModelWriter mAudioLevelModelWriter;
-    private ModelWriter mAccelerometerModelWriter;
-    private ModelWriter mGravityModelWriter;
-    private ModelWriter mLinearAccelerationModelWriter;
-    private ModelWriter mGyroscopeModelWriter;
-    private ModelWriter mRotationModelWriter;
-    private ModelWriter mMagnetometerModelWriter;
+    private SKSensorType[] sensors;
+    private List<ModelWriter> modelWriterList;
 
-    public SensingSession(final Context context, final String folderName) throws SKException {
+    public SensingSession(final Context context, final  SKSensorType[] sensors, final String folderName) throws SKException {
+
+        this.sensors = sensors;
+        this.modelWriterList = new ArrayList<>(sensors.length);
 
         // Init SensingKit
-        mSensingKitLib = SensingKitLib.getSensingKitLib(context);
+        mSensingKitLib = SensingKitLib.sharedSensingKitLib(context);
 
         // Create the folder
-        mSessionFolder = createFolder(folderName);
-
-        // Init ModelWriters
-        mAudioLevelModelWriter = new ModelWriter(SKSensorModuleType.AUDIO_LEVEL, mSessionFolder, "Audio");
-        mAccelerometerModelWriter = new ModelWriter(SKSensorModuleType.ACCELEROMETER, mSessionFolder, "Accelerometer");
-        mGravityModelWriter = new ModelWriter(SKSensorModuleType.GRAVITY, mSessionFolder, "Gravity");
-        mLinearAccelerationModelWriter = new ModelWriter(SKSensorModuleType.LINEAR_ACCELERATION, mSessionFolder, "LinearAcceleration");
-        mGyroscopeModelWriter = new ModelWriter(SKSensorModuleType.GYROSCOPE, mSessionFolder, "Gyroscope");
-        mRotationModelWriter = new ModelWriter(SKSensorModuleType.ROTATION, mSessionFolder, "Rotation");
-        mMagnetometerModelWriter = new ModelWriter(SKSensorModuleType.MAGNETOMETER, mSessionFolder, "Magnetometer");
+        mSessionFolder = createFolder(folderName, context);
 
         // Register Sensors
-        mSensingKitLib.registerSensorModule(SKSensorModuleType.AUDIO_LEVEL);
-        mSensingKitLib.registerSensorModule(SKSensorModuleType.ACCELEROMETER);
-        mSensingKitLib.registerSensorModule(SKSensorModuleType.GRAVITY);
-        mSensingKitLib.registerSensorModule(SKSensorModuleType.LINEAR_ACCELERATION);
-        mSensingKitLib.registerSensorModule(SKSensorModuleType.GYROSCOPE);
-        mSensingKitLib.registerSensorModule(SKSensorModuleType.ROTATION);
-        mSensingKitLib.registerSensorModule(SKSensorModuleType.MAGNETOMETER);
+        for (SKSensorType sensor : sensors) {
+            mSensingKitLib.registerSensor(sensor);
+        }
 
-        // Subscribe ModelWriters
-        mSensingKitLib.subscribeSensorDataListener(SKSensorModuleType.AUDIO_LEVEL, mAudioLevelModelWriter);
-        mSensingKitLib.subscribeSensorDataListener(SKSensorModuleType.ACCELEROMETER, mAccelerometerModelWriter);
-        mSensingKitLib.subscribeSensorDataListener(SKSensorModuleType.GRAVITY, mGravityModelWriter);
-        mSensingKitLib.subscribeSensorDataListener(SKSensorModuleType.LINEAR_ACCELERATION, mLinearAccelerationModelWriter);
-        mSensingKitLib.subscribeSensorDataListener(SKSensorModuleType.GYROSCOPE, mGyroscopeModelWriter);
-        mSensingKitLib.subscribeSensorDataListener(SKSensorModuleType.ROTATION, mRotationModelWriter);
-        mSensingKitLib.subscribeSensorDataListener(SKSensorModuleType.MAGNETOMETER, mMagnetometerModelWriter);
-
+        // Init and Subscribe modelWriters
+        for (SKSensorType sensor : sensors) {
+            ModelWriter modelWriter = new ModelWriter(sensor, mSessionFolder, sensor.getNonspacedName());
+            mSensingKitLib.subscribeSensorDataHandler(SKSensorType.ACCELEROMETER, modelWriter);
+            modelWriterList.add(modelWriter);
+        }
     }
 
     public void start() throws SKException {
@@ -95,13 +80,7 @@ public class SensingSession {
         this.isSensing = true;
 
         // Start
-        mSensingKitLib.startContinuousSensingWithSensor(SKSensorModuleType.AUDIO_LEVEL);
-        mSensingKitLib.startContinuousSensingWithSensor(SKSensorModuleType.ACCELEROMETER);
-        mSensingKitLib.startContinuousSensingWithSensor(SKSensorModuleType.GRAVITY);
-        mSensingKitLib.startContinuousSensingWithSensor(SKSensorModuleType.LINEAR_ACCELERATION);
-        mSensingKitLib.startContinuousSensingWithSensor(SKSensorModuleType.GYROSCOPE);
-        mSensingKitLib.startContinuousSensingWithSensor(SKSensorModuleType.ROTATION);
-        mSensingKitLib.startContinuousSensingWithSensor(SKSensorModuleType.MAGNETOMETER);
+        mSensingKitLib.startContinuousSensingWithAllRegisteredSensors();
     }
 
     public void stop() throws SKException {
@@ -109,80 +88,46 @@ public class SensingSession {
         this.isSensing = false;
 
         // Stop
-        mSensingKitLib.stopContinuousSensingWithSensor(SKSensorModuleType.AUDIO_LEVEL);
-        mSensingKitLib.stopContinuousSensingWithSensor(SKSensorModuleType.ACCELEROMETER);
-        mSensingKitLib.stopContinuousSensingWithSensor(SKSensorModuleType.GRAVITY);
-        mSensingKitLib.stopContinuousSensingWithSensor(SKSensorModuleType.LINEAR_ACCELERATION);
-        mSensingKitLib.stopContinuousSensingWithSensor(SKSensorModuleType.GYROSCOPE);
-        mSensingKitLib.stopContinuousSensingWithSensor(SKSensorModuleType.ROTATION);
-        mSensingKitLib.stopContinuousSensingWithSensor(SKSensorModuleType.MAGNETOMETER);
+        mSensingKitLib.stopContinuousSensingWithAllRegisteredSensors();
 
         // Flush
-        mAudioLevelModelWriter.flush();
-        mAccelerometerModelWriter.flush();
-        mGravityModelWriter.flush();
-        mLinearAccelerationModelWriter.flush();
-        mGyroscopeModelWriter.flush();
-        mRotationModelWriter.flush();
-        mMagnetometerModelWriter.flush();
+        for (ModelWriter modelWriter : modelWriterList) {
+            modelWriter.flush();
+        }
     }
 
     public void close() throws SKException {
 
         // Unsubscribe ModelWriters
-        mSensingKitLib.unsubscribeSensorDataListener(SKSensorModuleType.AUDIO_LEVEL, mAudioLevelModelWriter);
-        mSensingKitLib.unsubscribeSensorDataListener(SKSensorModuleType.ACCELEROMETER, mAccelerometerModelWriter);
-        mSensingKitLib.unsubscribeSensorDataListener(SKSensorModuleType.GRAVITY, mGravityModelWriter);
-        mSensingKitLib.unsubscribeSensorDataListener(SKSensorModuleType.LINEAR_ACCELERATION, mLinearAccelerationModelWriter);
-        mSensingKitLib.unsubscribeSensorDataListener(SKSensorModuleType.GYROSCOPE, mGyroscopeModelWriter);
-        mSensingKitLib.unsubscribeSensorDataListener(SKSensorModuleType.ROTATION, mRotationModelWriter);
-        mSensingKitLib.unsubscribeSensorDataListener(SKSensorModuleType.MAGNETOMETER, mMagnetometerModelWriter);
+        for (SKSensorType sensor : sensors) {
+            mSensingKitLib.unsubscribeAllSensorDataHandlers(sensor);
+        }
 
         // Deregister Sensors
-        mSensingKitLib.deregisterSensorModule(SKSensorModuleType.AUDIO_LEVEL);
-        mSensingKitLib.deregisterSensorModule(SKSensorModuleType.ACCELEROMETER);
-        mSensingKitLib.deregisterSensorModule(SKSensorModuleType.GRAVITY);
-        mSensingKitLib.deregisterSensorModule(SKSensorModuleType.LINEAR_ACCELERATION);
-        mSensingKitLib.deregisterSensorModule(SKSensorModuleType.GYROSCOPE);
-        mSensingKitLib.deregisterSensorModule(SKSensorModuleType.ROTATION);
-        mSensingKitLib.deregisterSensorModule(SKSensorModuleType.MAGNETOMETER);
-        mSensingKitLib.deregisterSensorModule(SKSensorModuleType.BLUETOOTH);
+        for (SKSensorType sensor : sensors) {
+            mSensingKitLib.deregisterSensor(sensor);
+        }
 
         // Close
-        mAudioLevelModelWriter.close();
-        mAccelerometerModelWriter.close();
-        mGravityModelWriter.close();
-        mLinearAccelerationModelWriter.close();
-        mGyroscopeModelWriter.close();
-        mRotationModelWriter.close();
-        mMagnetometerModelWriter.close();
+        for (ModelWriter modelWriter : modelWriterList) {
+            modelWriter.close();
+        }
     }
 
     public boolean isSensing() {
         return this.isSensing;
     }
 
-    private File createFolder(final String folderName) throws SKException {
-
-        // Create App folder: CrowdSensing
-        File appFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/CrowdSensing/");
-
-        if (!appFolder.exists()) {
-            if (!appFolder.mkdir()) {
-                throw new SKException(TAG, "Folder could not be created.", SKExceptionErrorCode.UNKNOWN_ERROR);
-            }
-        }
+    private File createFolder(final String folderName, Context context) throws SKException {
 
         // Create session folder
-        File folder = new File(appFolder, folderName);
-
+        File folder = new File(context.getExternalFilesDir(null), folderName);
         if (!folder.exists()) {
             if (!folder.mkdir()) {
-                throw new SKException(TAG, "Folder could not be created.", SKExceptionErrorCode.UNKNOWN_ERROR);
+                throw new SKException(TAG, "Session Folder could not be created.", SKExceptionErrorCode.UNKNOWN_ERROR);
             }
         }
 
         return folder;
     }
-
 }

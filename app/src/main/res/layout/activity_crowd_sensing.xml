@@ -24,7 +24,7 @@ tools:context=".CrowdSensing">
         android:id="@+id/pause"
         android:layout_width="fill_parent"
         android:layout_height="40pt"
-        android:text="Pause"
-        android:enabled="false"/>
+        android:enabled="false"
+        android:text="Pause" />
 
 </LinearLayout>
