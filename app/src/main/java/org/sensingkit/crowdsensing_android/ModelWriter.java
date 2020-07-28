@@ -45,7 +45,7 @@ public class ModelWriter implements SKSensorDataHandler {
     private File mFile;
     private BufferedOutputStream mFileBuffer;
 
-    public ModelWriter(SKSensorType sensorType, File sessionFolder, String filename) throws SKException {
+    public ModelWriter(SKSensorType sensorType, File sessionFolder, String filename, String header) throws SKException {
 
         this.sensorType = sensorType;
         this.mFile = createFile(sessionFolder, filename);
@@ -55,6 +55,15 @@ public class ModelWriter implements SKSensorDataHandler {
         }
         catch (FileNotFoundException ex) {
             throw new SKException(TAG, "File could not be found.", SKExceptionErrorCode.UNKNOWN_ERROR);
+        }
+
+        // Write header if available
+        if (header != null) {
+            try {
+                this.mFileBuffer.write((header + "\n").getBytes());
+            } catch (IOException ex) {
+                Log.e(TAG, ex.getMessage());
+            }
         }
     }
 

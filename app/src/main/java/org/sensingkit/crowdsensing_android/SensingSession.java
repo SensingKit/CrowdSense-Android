@@ -67,7 +67,8 @@ public class SensingSession {
 
         // Init and Subscribe modelWriters
         for (SKSensorType sensor : sensors) {
-            ModelWriter modelWriter = new ModelWriter(sensor, mSessionFolder, sensor.getNonspacedName());
+            String header = mSensingKitLib.csvHeaderForSensor(sensor);
+            ModelWriter modelWriter = new ModelWriter(sensor, mSessionFolder, sensor.getNonspacedName(), header);
             mSensingKitLib.subscribeSensorDataHandler(sensor, modelWriter);
             modelWriterList.add(modelWriter);
         }
